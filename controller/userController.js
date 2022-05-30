@@ -19,7 +19,7 @@ exports.register =  async (req , res)=> {
             "nickname": req.body.nickname,
             "password":hashedPassword
         });
-        let accessToken = jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET)
+        let accessToken = jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET, expiresIn)
         user.save()
             .then(()=> res.status(201).json({ "user_id": user._id,"token": accessToken}))
             .catch (error => res.status(400).json({error : error.message}))
@@ -27,10 +27,13 @@ exports.register =  async (req , res)=> {
 };
 exports.login =  async (req, res)=>{
     console.log("login ..")
-    if (!(req.body.email && req.body.password)) {
+    if (!(req.body.identity && req.body.password)) {
         return res.status(422).send({"error":"All inputs are required"});
     }
-    let user = await User.findOne({ email: req.body.email })
+    let user = await User.findOne({ email: req.body.identity })
+   if (!user){
+      user = await User.findOne({ nickname: req.body.identity })
+   }
     try{
         let match = await bcrypt.compare(req.body.password, user.password);
         if(match){
