@@ -4,55 +4,54 @@ const bcrypt = require("bcrypt");
 const { OAuth2Client } = require('google-auth-library')
 const client = new OAuth2Client(process.env.REACT_APP_GOOGLE_CLIENT_ID)
 
-exports.register =  async (req , res)=> {
-    if (!(req.body.email || req.body.nickname || req.body.password || req.body.passwordConfirmation )) {
-        res.status(422).send({"error":"All inputs are required"});
+exports.register = async (req, res) => {
+    if (!(req.body.email || req.body.nickname || req.body.password || req.body.passwordConfirmation)) {
+        res.status(422).send({ "error": "All inputs are required" });
     }
-    else if (req.body.password !== req.body.passwordConfirmation){
-        res.status(422).send({"error":"Password and its confirmation doesn't match"});
+    else if (req.body.password !== req.body.passwordConfirmation) {
+        res.status(422).send({ "error": "Password and its confirmation don't match" });
     }
     else {
 
         let hashedPassword = await bcrypt.hash(req.body.password, 10);
         let user = new User({
-            "name": req.body.name,
-            "email": req.body.email,
             "nickname": req.body.nickname,
-            "password":hashedPassword
+            "email": req.body.email,
+            "password": hashedPassword
         });
-        let accessToken = jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET)
+        let accessToken = jwt.sign({ user_id: user._id }, process.env.TOKEN_SECRET)
         user.save()
-            .then(()=> res.status(201).json({ "user_id": user._id,"token": accessToken}))
-            .catch (error => res.status(400).json({error : error.message}))
+            .then(() => res.status(201).json({ "user_id": user._id, "token": accessToken }))
+            .catch(error => res.status(400).json({ error: error.message }))
     }
 };
-exports.login =  async (req, res)=>{
+exports.login = async (req, res) => {
     console.log("login ..")
     if (!(req.body.identity && req.body.password)) {
-        return res.status(422).send({"error":"All inputs are required"});
+        return res.status(422).send({ "error": "All inputs are required" });
     }
     let user = await User.findOne({ email: req.body.identity })
-    if (!user){
+    if (!user) {
         user = await User.findOne({ nickname: req.body.identity })
     }
-    try{
+    try {
         let match = await bcrypt.compare(req.body.password, user.password);
-        if(match){
-            let accessToken = jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET)
+        if (match) {
+            let accessToken = jwt.sign({ user_id: user._id }, process.env.TOKEN_SECRET)
             res.json({
                 accessToken: accessToken,
             });
         } else {
             return res.status(401).json({ message: "Invalid Credentials" });
         }
-    } catch(e) {
+    } catch (e) {
         console.log(e)
         return res.status(401).json({ message: "Invalid Credentials" });
 
     }
 };
 
-exports.google = async (req,res)=> {
+exports.google = async (req, res) => {
 
     const { token } = req.body
     console.log(token)
@@ -67,8 +66,7 @@ exports.google = async (req,res)=> {
         {
             "name": name,
             "email": email,
-        }, { new: true, upsert: true }, function (err, doc)
-        {
+        }, { new: true, upsert: true }, function (err, doc) {
             if (err) {
                 console.log(err.message)
             }
@@ -78,16 +76,16 @@ exports.google = async (req,res)=> {
     let accessToken
     User.findOne({ email: email })
         .populate("widgets")
-        .then((response)=>
+        .then((response) =>
             res.status(201).json(
                 {
                     "googletoken": token,
-                    "accessToken": accessToken = jwt.sign({ user_id: response._id}, process.env.TOKEN_SECRET),
+                    "accessToken": accessToken = jwt.sign({ user_id: response._id }, process.env.TOKEN_SECRET),
                     "widgets": response.widgets,
                     "params": response.params,
                     "timer": response.timer,
                 }))
-        .catch((error)=>res.status(410).json(error.message))
+        .catch((error) => res.status(410).json(error.message))
 
 
 }
