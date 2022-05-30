@@ -25,29 +25,28 @@ exports.register =  async (req , res)=> {
             .catch (error => res.status(400).json({error : error.message}))
     }
 };
-// TODO : LOGIN
-// exports.login =  async (req, res)=>{
-//     console.log("login ..")
-//     if (!(req.body.email && req.body.password)) {
-//         return res.status(422).send({"error":"All inputs are required"});
-//     }
-//     let user = await User.findOne({ email: req.body.email })
-//     try{
-//         let match = await bcrypt.compare(req.body.password, user.password);
-//         if(match){
-//             let accessToken = jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET)
-//             res.json({
-//                 accessToken: accessToken,
-//             });
-//         } else {
-//             return res.status(401).json({ message: "Invalid Credentials" });
-//         }
-//     } catch(e) {
-//         console.log(e)
-//         return res.status(401).json({ message: "Invalid Credentials" });
-//
-//     }
-// };
+exports.login =  async (req, res)=>{
+    console.log("login ..")
+    if (!(req.body.email && req.body.password)) {
+        return res.status(422).send({"error":"All inputs are required"});
+    }
+    let user = await User.findOne({ email: req.body.email })
+    try{
+        let match = await bcrypt.compare(req.body.password, user.password);
+        if(match){
+            let accessToken = jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET)
+            res.json({
+                accessToken: accessToken,
+            });
+        } else {
+            return res.status(401).json({ message: "Invalid Credentials" });
+        }
+    } catch(e) {
+        console.log(e)
+        return res.status(401).json({ message: "Invalid Credentials" });
+
+    }
+};
 
 
 // TODO : READ
