@@ -2,18 +2,20 @@ const express = require('express')
 const cors = require('cors');
 const app = express();
 app.use(cors());
-
 app.use(express.json());
 require('dotenv').config()
 const mongoose = require("mongoose");
 app.use(express.json());
 const userRoute = require("./routes/user")
+const cloudinary = require("cloudinary");
 app.use("/api", userRoute)
 
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-app.use("/", (req, res)=> {
-    return res.status(404).json({"result":"path not found"})
-})
 
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log("Connected to DB"))

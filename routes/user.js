@@ -1,10 +1,9 @@
 const express = require('express')
 const userRoute = express.Router()
-const logRoute = require("../middlewares/logRoute")
 const userController = require("../controller/userController")
 
 // CREATE
-userRoute.post("/user", userController.addUser)
+userRoute.post("/user", userController.register)
 // TODO
 // //LOGIN
 // userRoute.post("/user/login", userController.login)
