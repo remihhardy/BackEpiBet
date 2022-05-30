@@ -21,6 +21,6 @@ mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log("Connected to DB"))
     .catch (console.error);
 
-app.listen(3000, ()=>{
+app.listen(3001, ()=>{
     console.log("Server UP")
 })

@@ -1,13 +1,14 @@
 let User = require("../model/User");
 let jwt = require('jsonwebtoken');
 const bcrypt = require("bcrypt");
+const { OAuth2Client } = require('google-auth-library')
+const client = new OAuth2Client(process.env.REACT_APP_GOOGLE_CLIENT_ID)
 
 exports.register =  async (req , res)=> {
-    console.log("hello !")
     if (!(req.body.email || req.body.nickname || req.body.password || req.body.passwordConfirmation )) {
         res.status(422).send({"error":"All inputs are required"});
     }
-    else if (req.body.password!==req.body.passwordConfirmation){
+    else if (req.body.password !== req.body.passwordConfirmation){
         res.status(422).send({"error":"Password and its confirmation doesn't match"});
     }
     else {
@@ -19,7 +20,7 @@ exports.register =  async (req , res)=> {
             "nickname": req.body.nickname,
             "password":hashedPassword
         });
-        let accessToken = jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET, expiresIn)
+        let accessToken = jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET)
         user.save()
             .then(()=> res.status(201).json({ "user_id": user._id,"token": accessToken}))
             .catch (error => res.status(400).json({error : error.message}))
@@ -31,9 +32,9 @@ exports.login =  async (req, res)=>{
         return res.status(422).send({"error":"All inputs are required"});
     }
     let user = await User.findOne({ email: req.body.identity })
-   if (!user){
-      user = await User.findOne({ nickname: req.body.identity })
-   }
+    if (!user){
+        user = await User.findOne({ nickname: req.body.identity })
+    }
     try{
         let match = await bcrypt.compare(req.body.password, user.password);
         if(match){
@@ -51,6 +52,45 @@ exports.login =  async (req, res)=>{
     }
 };
 
+exports.google = async (req,res)=> {
+
+    const { token } = req.body
+    console.log(token)
+
+    const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.CLIENT_ID
+    });
+    const { name, email } = ticket.getPayload();
+    console.log("entering update")
+    User.findOneAndUpdate({ email: email },
+        {
+            "name": name,
+            "email": email,
+        }, { new: true, upsert: true }, function (err, doc)
+        {
+            if (err) {
+                console.log(err.message)
+            }
+            console.log(doc);
+        }
+    )
+    let accessToken
+    User.findOne({ email: email })
+        .populate("widgets")
+        .then((response)=>
+            res.status(201).json(
+                {
+                    "googletoken": token,
+                    "accessToken": accessToken = jwt.sign({ user_id: response._id}, process.env.TOKEN_SECRET),
+                    "widgets": response.widgets,
+                    "params": response.params,
+                    "timer": response.timer,
+                }))
+        .catch((error)=>res.status(410).json(error.message))
+
+
+}
 
 // TODO : READ
 // exports.getUser =  async(req , res)=> {
