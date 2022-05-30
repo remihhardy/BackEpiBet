@@ -10,6 +10,7 @@ app.use(express.json());
 const userRoute = require("./routes/user")
 app.use("/api", userRoute)
 
+
 app.use("/", (req, res)=> {
     return res.status(404).json({"result":"path not found"})
 })
