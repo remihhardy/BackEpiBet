@@ -7,6 +7,10 @@ const userSchema = mongoose.Schema({
     nickname: {
         type: String,
         maxlength:64,
+        minlength:1,
+        unique:true,
+        exist:true,
+
     },
     email:{ type: String,
         unique:true,

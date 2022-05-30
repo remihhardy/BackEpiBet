@@ -5,7 +5,7 @@ const { OAuth2Client } = require('google-auth-library')
 const client = new OAuth2Client(process.env.REACT_APP_GOOGLE_CLIENT_ID)
 
 exports.register =  async (req , res)=> {
-    if (!(req.body.email || req.body.nickname || req.body.password || req.body.passwordConfirmation )) {
+    if (!(req.body.email && req.body.nickname && req.body.password && req.body.passwordConfirmation )) {
         res.status(422).send({"error":"All inputs are required"});
     }
     else if (req.body.password !== req.body.passwordConfirmation){
@@ -52,7 +52,7 @@ exports.login =  async (req, res)=>{
 };
 
 exports.google = async (req,res)=> {
-
+console.log("wanna play with google ?");
     const { token } = req.body
     console.log(token)
 
