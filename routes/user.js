@@ -2,7 +2,6 @@ const express = require('express')
 const userRoute = express.Router()
 const userController = require("../controller/userController")
 
-
 // CREATE
 userRoute.post("/user", userController.register)
 

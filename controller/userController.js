@@ -53,41 +53,37 @@ exports.login =  async (req, res)=>{
 
 exports.google = async (req,res)=> {
 console.log("wanna play with google ?");
-    const { token } = req.body
-    console.log(token)
-
-    const ticket = await client.verifyIdToken({
-        idToken: token,
-        audience: process.env.CLIENT_ID
-    });
-    const { name, email } = ticket.getPayload();
-    console.log("entering update")
-    User.findOneAndUpdate({ email: email },
-        {
-            "name": name,
-            "email": email,
-        }, { new: true, upsert: true }, function (err, doc)
-        {
-            if (err) {
-                console.log(err.message)
-            }
-            console.log(doc);
-        }
-    )
-    let accessToken
-    User.findOne({ email: email })
-        .populate("widgets")
-        .then((response)=>
-            res.status(201).json(
-                {
-                    "googletoken": token,
-                    "accessToken": accessToken = jwt.sign({ user_id: response._id}, process.env.TOKEN_SECRET),
-                    "widgets": response.widgets,
-                    "params": response.params,
-                    "timer": response.timer,
-                }))
-        .catch((error)=>res.status(410).json(error.message))
-
+    // const { code } = req.body.code
+    // console.log(code)
+    res.status(200).json({ message: "almost there" });
+    // const ticket = await client.verifyIdToken({
+    //     idToken: req.body.code,
+    //     audience: process.env.CLIENT_ID
+    // });
+    // const { name, email } = ticket.getPayload();
+    // console.log("entering update")
+    // User.findOneAndUpdate({ email: email },
+    //     {
+    //         "nickname": name,
+    //         "email": email,
+    //     }, { new: true, upsert: true }, function (err, doc)
+    //     {
+    //         if (err) {
+    //             console.log(err.message)
+    //         }
+    //         console.log(doc);
+    //     }
+    // )
+    // let accessToken
+    // User.findOne({ email: email })
+    //     .then((response)=>
+    //         res.status(201).json(
+    //             {
+    //                 "googletoken": token,
+    //                 "accessToken": accessToken = jwt.sign({ user_id: response._id}, process.env.TOKEN_SECRET),
+    //             }))
+    //     .catch((error)=>res.status(410).json(error.message))
+    //
 
 }
 
