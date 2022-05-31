@@ -2,6 +2,7 @@ let User = require("../model/User");
 let jwt = require('jsonwebtoken');
 const bcrypt = require("bcrypt");
 const { OAuth2Client } = require('google-auth-library')
+const cloudinary = require("cloudinary");
 const client = new OAuth2Client(process.env.REACT_APP_GOOGLE_CLIENT_ID)
 
 exports.register =  async (req , res)=> {
@@ -52,38 +53,40 @@ exports.login =  async (req, res)=>{
 };
 
 exports.google = async (req,res)=> {
-console.log("wanna play with google ?");
-    // const { code } = req.body.code
-    // console.log(code)
-    res.status(200).json({ message: "almost there" });
-    // const ticket = await client.verifyIdToken({
-    //     idToken: req.body.code,
-    //     audience: process.env.CLIENT_ID
-    // });
-    // const { name, email } = ticket.getPayload();
-    // console.log("entering update")
-    // User.findOneAndUpdate({ email: email },
-    //     {
-    //         "nickname": name,
-    //         "email": email,
-    //     }, { new: true, upsert: true }, function (err, doc)
-    //     {
-    //         if (err) {
-    //             console.log(err.message)
-    //         }
-    //         console.log(doc);
-    //     }
-    // )
-    // let accessToken
-    // User.findOne({ email: email })
-    //     .then((response)=>
-    //         res.status(201).json(
-    //             {
-    //                 "googletoken": token,
-    //                 "accessToken": accessToken = jwt.sign({ user_id: response._id}, process.env.TOKEN_SECRET),
-    //             }))
-    //     .catch((error)=>res.status(410).json(error.message))
-    //
+    if (!req.body.code){
+        res.status(422).json({"error" : "no google token found"})
+    }
+
+    const  token  = await req.body.code
+    const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.CLIENT_ID
+    })
+        .catch (error => res.status(400).json({error : error.message}));
+    const { email, given_name, picture } = await ticket.getPayload();
+    let user = await User.findOne({"email":email})
+    let code= 200
+    if(!user) {
+        user = new User({
+            "email": email,
+            "nickname": given_name,
+        });
+
+        let image
+        await cloudinary.v2.uploader.upload(picture,
+            { public_id: user._id },
+            function(error, result) {image=result.url });
+        user.image= image
+        user.save()
+            .catch (error => res.status(400).json({error : error.message}))
+        code=201
+    }
+    let accessToken=jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET)
+    res.status(code).json(
+        {
+            "googletoken": token,
+            "accessToken": accessToken ,
+        })
 
 }
 
