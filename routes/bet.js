@@ -12,6 +12,9 @@ betRoute.post("/bet",authRoute,roomAdmin, betController.addBet)
 betRoute.get("/bet/:id", betController.getBet)
 
 betRoute.get("/bet" , betController.getBet)
+
+betRoute.patch("/bet/result",authRoute,roomAdmin, betController.addResult)
+
 //// TODO :
 // betRoute.put("/bet/:id", betController.updateBet)
 //
