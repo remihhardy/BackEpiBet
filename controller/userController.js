@@ -20,11 +20,7 @@ exports.register = async (req, res) => {
             "email": req.body.email,
             "password": hashedPassword
         });
-<<<<<<< HEAD
-        let accessToken = jwt.sign({ user_id: user._id }, process.env.TOKEN_SECRET)
-=======
-        let accessToken = jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET,{expiresIn: "10h"})
->>>>>>> 66a47a041608fdd89c30d247fd70c81521aaf2e4
+        let accessToken = jwt.sign({ user_id: user._id }, process.env.TOKEN_SECRET, { expiresIn: "10h" })
         user.save()
             .then(() => res.status(201).json({ "user_id": user._id, "token": accessToken }))
             .catch(error => res.status(400).json({ error: error.message }))
@@ -41,13 +37,8 @@ exports.login = async (req, res) => {
     }
     try {
         let match = await bcrypt.compare(req.body.password, user.password);
-<<<<<<< HEAD
         if (match) {
-            let accessToken = jwt.sign({ user_id: user._id }, process.env.TOKEN_SECRET)
-=======
-        if(match){
-            let accessToken = jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET,{expiresIn: "10h"})
->>>>>>> 66a47a041608fdd89c30d247fd70c81521aaf2e4
+            let accessToken = jwt.sign({ user_id: user._id }, process.env.TOKEN_SECRET, { expiresIn: "10h" })
             res.json({
                 accessToken: accessToken,
             });
@@ -61,70 +52,40 @@ exports.login = async (req, res) => {
     }
 };
 
-<<<<<<< HEAD
 exports.google = async (req, res) => {
-
-    const { token } = req.body
-    console.log(token)
-=======
-exports.google = async (req,res)=> {
-    if (!req.body.code){
-        res.status(422).json({"error" : "no google token found"})
+    if (!req.body.code) {
+        res.status(422).json({ "error": "no google token found" })
     }
->>>>>>> 66a47a041608fdd89c30d247fd70c81521aaf2e4
 
-    const  token  = await req.body.code
+    const token = await req.body.code
     const ticket = await client.verifyIdToken({
         idToken: token,
         audience: process.env.CLIENT_ID
     })
-        .catch (error => res.status(400).json({error : error.message}));
+        .catch(error => res.status(400).json({ error: error.message }));
     const { email, given_name, picture } = await ticket.getPayload();
-    let user = await User.findOne({"email":email})
-    let code= 200
-    if(!user) {
+    let user = await User.findOne({ "email": email })
+    let code = 200
+    if (!user) {
         user = new User({
             "email": email,
-<<<<<<< HEAD
-        }, { new: true, upsert: true }, function (err, doc) {
-            if (err) {
-                console.log(err.message)
-            }
-            console.log(doc);
-        }
-    )
-    let accessToken
-    User.findOne({ email: email })
-        .populate("widgets")
-        .then((response) =>
-            res.status(201).json(
-                {
-                    "googletoken": token,
-                    "accessToken": accessToken = jwt.sign({ user_id: response._id }, process.env.TOKEN_SECRET),
-                    "widgets": response.widgets,
-                    "params": response.params,
-                    "timer": response.timer,
-                }))
-        .catch((error) => res.status(410).json(error.message))
-=======
             "nickname": given_name,
         });
->>>>>>> 66a47a041608fdd89c30d247fd70c81521aaf2e4
 
         let image
         await cloudinary.v2.uploader.upload(picture,
             { public_id: user._id },
-            function(error, result) {image=result.url });
-        user.image= image
+            function (error, result) { image = result.url });
+        user.image = image
         user.save()
-            .catch (error => res.status(400).json({error : error.message}))
-        code=201
+            .catch(error => res.status(400).json({ error: error.message }))
+        code = 201
     }
-    let accessToken=jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET, {expiresIn: "10h"})
+    let accessToken = jwt.sign({ user_id: user._id }, process.env.TOKEN_SECRET, { expiresIn: "10h" })
     res.status(code).json(
         {
             "googletoken": token,
-            "accessToken": accessToken ,
+            "accessToken": accessToken,
         })
 
 }
