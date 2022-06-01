@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 let uniqueValidator = require('mongoose-unique-validator');
-const {ObjectId} = require("mongodb");
 
 const userSchema = mongoose.Schema({
     nickname: {

@@ -6,9 +6,17 @@ app.use(express.json());
 require('dotenv').config()
 const mongoose = require("mongoose");
 app.use(express.json());
+
 const userRoute = require("./routes/user")
 const cloudinary = require("cloudinary");
 app.use("/api", userRoute)
+
+
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", process.env.ENVIRONMENT_DOMAIN)
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+        next()
+})
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -21,6 +29,10 @@ mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log("Connected to DB"))
     .catch(console.error);
 
+<<<<<<< HEAD
 app.listen(3001, () => {
+=======
+app.listen(3001, ()=>{
+>>>>>>> 66a47a041608fdd89c30d247fd70c81521aaf2e4
     console.log("Server UP")
 })
