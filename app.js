@@ -9,8 +9,10 @@ app.use(express.json());
 
 const userRoute = require("./routes/user")
 const roomRoute = require("./routes/room")
+const betRoute = require("./routes/bet")
+const pronosticRoute = require("./routes/pronostic")
 const cloudinary = require("cloudinary");
-app.use("/api", userRoute, roomRoute)
+app.use("/api", userRoute, roomRoute, betRoute, pronosticRoute)
 
 
 app.use(function(req, res, next) {

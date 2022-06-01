@@ -1,39 +1,40 @@
-let Room = require("../model/Room");
+let Bet = require("../model/Bet");
+const Room = require("../model/Room");
 
 
-exports.addRoom =  async (req , res)=> {
-    if (!(req.body.name && req.body.category )) {
+exports.addBet =  async (req , res)=> {
+
+    if (!(req.body.title && req.body.options && req.body.deadline && req.body.room_id )) {
         res.status(422).send({"error":"All inputs are required"});
     }
     else {
-        let room = new Room({
-            "name": req.body.name,
-            "private": req.body.private,
-            "category": req.body.category,
-            "admin": req.body.user_id,
-            "participants": [req.body.user_id],
+        let bet = new Bet({
+            "title": req.body.title,
+            "options": req.body.options,
+            "deadline": req.body.category,
+            "score_bet": req.body.score_bet,
         });
-        room.save()
-            .then(()=> res.status(201).json({ "room_id": room._id}))
+        bet.save()
+            .then(()=>Room.updateOne({"_id": req.body.room_id},{ $push:{bets: bet._id}}))
+            .then(()=> res.status(201).json({ "bet_id": bet._id}))
             .catch (error => res.status(500).json({error : error.message}))
+
     }
 };
-exports.getRoom =  async(req , res)=> {
+exports.getBet =  async(req , res)=> {
     let filter = {}
     if (req.params.id) {
         filter = {_id:req.params.id}}
-   let rooms= await Room.find(filter)
-        .populate({path:"bets",populate:{path:"pronostics"}})
-        .populate("invited")
-        .populate("participants")
+   let bets= await Bet.find(filter)
+       .populate("pronostics")
         .catch((e) => {
-            res.status(403).json({"error": e.message})
+            res.status(400).json({"error": e.message})
         })
 
-    res.status(200).json(rooms)
+    res.status(200).json(bets)
 };
-// TODO : update room
-// exports.updateRoom =  async(req , res)=> {
+// TODO : update bet
+// exports.updateBet =  async(req , res)=> {
 //     if (!(req.body.title && req.params.id&& req.body.releaseDate&& req.body.genre&& req.body.image && req.body.plot && req.body.director )) {
 //         res.status(422).send({"error":"All inputs are required"});
 //     }
@@ -41,7 +42,7 @@ exports.getRoom =  async(req , res)=> {
 //     else {
 //         let filter = {_id: req.params.id}
 //
-//         Room.findOneAndUpdate(filter,
+//         Bet.findOneAndUpdate(filter,
 //             {
 //                 "title": req.body.title,
 //                 "releaseDate": req.body.genre,
@@ -50,18 +51,18 @@ exports.getRoom =  async(req , res)=> {
 //                 "director": req.body.director,
 //             }
 //         )
-//             .then(() => res.status(201).json({"message": "room " + req.body.title + " updated"}))
+//             .then(() => res.status(201).json({"message": "bet " + req.body.title + " updated"}))
 //             .catch((error) => res.status(500).json({"error": error.message}))
 //     }
 // };
-// exports.deleteRoom =  async(req , res)=> {
+// exports.deleteBet =  async(req , res)=> {
 //     if (!(req.params.id)) {
 //         res.status(422).send({"error":"All inputs are required"});
 //     }
 //     let filter = {_id : req.params.id }
-//     Room.deleteOne(filter)
+//     Bet.deleteOne(filter)
 //         .then(
-//             () => res.status(200).json({result: "room deleted"})
+//             () => res.status(200).json({result: "bet deleted"})
 //         )
 //         .catch(
 //             (error) => res.status(400).json({error: error.message})
