@@ -20,7 +20,7 @@ exports.register =  async (req , res)=> {
             "nickname": req.body.nickname,
             "password":hashedPassword
         });
-        let accessToken = jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET)
+        let accessToken = jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET,{expiresIn: "10h"})
         user.save()
             .then(()=> res.status(201).json({ "user_id": user._id,"token": accessToken}))
             .catch (error => res.status(400).json({error : error.message}))
@@ -38,7 +38,7 @@ exports.login =  async (req, res)=>{
     try{
         let match = await bcrypt.compare(req.body.password, user.password);
         if(match){
-            let accessToken = jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET)
+            let accessToken = jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET,{expiresIn: "10h"})
             res.json({
                 accessToken: accessToken,
             });
@@ -81,7 +81,7 @@ exports.google = async (req,res)=> {
             .catch (error => res.status(400).json({error : error.message}))
         code=201
     }
-    let accessToken=jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET)
+    let accessToken=jwt.sign({ user_id: user._id}, process.env.TOKEN_SECRET, {expiresIn: "10h"})
     res.status(code).json(
         {
             "googletoken": token,
