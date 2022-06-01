@@ -126,7 +126,7 @@ exports.addResult =  async(req , res)=> {
             })
         }
     }
-    res.status(200).json({"message": "end of function"})
+    res.status(200).json({"message": "result fullfilled !"})
 };
 
 // TODO : update bet
