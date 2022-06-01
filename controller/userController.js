@@ -4,15 +4,9 @@ const bcrypt = require("bcrypt");
 const { OAuth2Client } = require('google-auth-library')
 const client = new OAuth2Client(process.env.REACT_APP_GOOGLE_CLIENT_ID)
 
-<<<<<<< HEAD
 exports.register = async (req, res) => {
-    if (!(req.body.email || req.body.nickname || req.body.password || req.body.passwordConfirmation)) {
+    if (!(req.body.email && req.body.nickname && req.body.password && req.body.passwordConfirmation)) {
         res.status(422).send({ "error": "All inputs are required" });
-=======
-exports.register =  async (req , res)=> {
-    if (!(req.body.email && req.body.nickname && req.body.password && req.body.passwordConfirmation )) {
-        res.status(422).send({"error":"All inputs are required"});
->>>>>>> cb17ab16b86257f7139ddf07fcecec46b8b4b880
     }
     else if (req.body.password !== req.body.passwordConfirmation) {
         res.status(422).send({ "error": "Password and its confirmation don't match" });
@@ -21,10 +15,6 @@ exports.register =  async (req , res)=> {
 
         let hashedPassword = await bcrypt.hash(req.body.password, 10);
         let user = new User({
-<<<<<<< HEAD
-=======
-            "email": req.body.email,
->>>>>>> cb17ab16b86257f7139ddf07fcecec46b8b4b880
             "nickname": req.body.nickname,
             "email": req.body.email,
             "password": hashedPassword
@@ -61,13 +51,8 @@ exports.login = async (req, res) => {
     }
 };
 
-<<<<<<< HEAD
 exports.google = async (req, res) => {
 
-=======
-exports.google = async (req,res)=> {
-console.log("wanna play with google ?");
->>>>>>> cb17ab16b86257f7139ddf07fcecec46b8b4b880
     const { token } = req.body
     console.log(token)
 
