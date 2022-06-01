@@ -8,8 +8,9 @@ const mongoose = require("mongoose");
 app.use(express.json());
 
 const userRoute = require("./routes/user")
+const roomRoute = require("./routes/room")
 const cloudinary = require("cloudinary");
-app.use("/api", userRoute)
+app.use("/api", userRoute, roomRoute)
 
 
 app.use(function(req, res, next) {

@@ -18,6 +18,8 @@ const roomSchema = mongoose.Schema({
         },
     category:{
         type: String,
+        minlength:1,
+        exist:true,
     },
     participants:{
         type:[{ type : ObjectId, ref: "User"}]
@@ -33,6 +35,7 @@ const roomSchema = mongoose.Schema({
     },
     open:{
         type:Boolean,
+        default:true,
     },
 
 });
