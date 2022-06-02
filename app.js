@@ -13,7 +13,6 @@ const betRoute = require('./routes/bet')
 const pronosticRoute = require('./routes/pronostic')
 const cloudinary = require('cloudinary')
 app.use('/api', userRoute, roomRoute, betRoute, pronosticRoute)
-
 app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Origin', process.env.ENVIRONMENT_DOMAIN)
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')

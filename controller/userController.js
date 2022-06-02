@@ -67,7 +67,6 @@ exports.google = async (req, res) => {
       email,
       nickname: given_name
     })
-
     let image
     await cloudinary.v2.uploader.upload(picture,
       { public_id: user._id },
@@ -85,52 +84,63 @@ exports.google = async (req, res) => {
     })
 }
 
-// TODO : READ
-// exports.getUser =  async(req , res)=> {
-//     let filter = {_id : req.body.user_id }
-//     try{
-//         let user = await User.find(filter,{password:0}).populate("widgets")
-//         res.status(200).json(user)
-//     }
-//     catch (e) {
-//         res.status(403).json({"error": e.message})
-//     }
-// };
+exports.getUser = async (req, res) => {
+    let filter = {}
+    if (req.params.id) {
+        filter = { _id: req.params.id }
+    }
+    let user = await User.find(filter, { password: 0 })
+        .catch((e) => {
+            res.status(403).json({ "error": e.message })
+        })
+
+    res.status(200).json(user)
+};
+
+
 
 // TODO : UPDATE
-// exports.updateUser =  async(req , res)=> {
-//     if (!(req.body.email || req.body.name || req.body.nickname || req.body.password )) {
-//         res.status(422).send({"error":"All inputs are required"});
-//     }
-//     else {
-//         let filter = {_id: req.body.user_id}
-//         let newMail = req.body.email
-//         let newName = req.body.name
-//         let newNickname = req.body.nickname
-//         let hashedPassword = await bcrypt.hash(req.body.password, 10);
-//         User.findOneAndUpdate(filter,
-//             {
-//                 "name": newName,
-//                 "nickname": newNickname,
-//                 "password": hashedPassword,
-//                 "email": newMail,
-//             }
-//         )
-//             .then(() => res.status(201).json({"message": "user " + req.body.name + " updated"}))
-//             .catch((error) => res.status(500).json({"error": error.message}))
-//     }
-// };
+exports.updateUser = async (req, res) => {
 
-// TODO : DELETE
-// exports.deleteUser =  async(req , res)=> {
-//
-//     let filter = {_id : req.body.user_id }
-//     User.deleteOne(filter)
-//         .then(
-//             () => res.status(200).json({result: "user deleted"})
-//         )
-//         .catch(
-//             (error) => res.status(400).json({error: error.message})
-//         )
-//
-// };
+    let filter = { _id: req.body._id }
+    let user = await User.find(filter)
+    console.log("USER", user)
+
+    let newData = {};
+
+    if (typeof req.body.nickname === 'undefined' || req.body.nickname == "") {
+        newData.nickname = user[0].nickname;
+    } else { newData.nickname = req.body.nickname; }
+
+    if (typeof req.body.email === 'undefined' || req.body.email == "") {
+        newData.email = user[0].email;
+    } else { newData.email = req.body.email; }
+
+    if (typeof req.body.image === 'undefined' || req.body.image == "") {
+        newData.image = user[0].image;
+    } else { newData.image = req.body.image; }
+
+    if (typeof req.body.password !== 'undefined') {
+        newData.password = await bcrypt.hash(req.body.password, 10).catch((err) => { console.error(err); });
+    }
+
+    console.log("NEW DATA", newData);
+
+    User.findOneAndUpdate(filter, newData)
+        .then(() => res.status(201).json({ "message": "user " + req.body.nickname + " updated" }))
+        .catch((error) => res.status(500).json({ "error": error.message }))
+};
+
+exports.deleteUser = async (req, res) => {
+
+    let filter = { _id: req.body.user_id }
+    User.deleteOne(filter)
+        .then(
+            () => res.status(200).json({ result: "user deleted" })
+        )
+        .catch(
+            (error) => res.status(400).json({ error: error.message })
+        )
+
+};
+
