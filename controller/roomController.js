@@ -1,5 +1,5 @@
 const Room = require('../model/Room')
-const Epicoin = require("../model/Epicoin");
+const Epicoin = require('../model/Epicoin')
 
 exports.addRoom = async (req, res) => {
   if (!(req.body.name && req.body.category)) {
@@ -35,6 +35,7 @@ exports.getRoom = async (req, res) => {
     filter = {}
   }
   const epicoins = await Epicoin.find(filter)
+    .populate('user', { _id: 1, nickname: 1 })
     .catch((e) => {
       res.status(400).json({ error: e.message })
     })
