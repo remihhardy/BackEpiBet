@@ -9,16 +9,15 @@ userRoute.post("/user", userController.register)
 userRoute.post("/user/login", userController.login)
 
 //GOOGLE
-userRoute.post("/user/google",userController.google)
+userRoute.post("/user/google", userController.google)
 
-//TODO
-// // READ
-// userRoute.get("/user",logRoute , userController.getUser)
-//
-// userRoute.put("/user" ,logRoute, userController.updateUser)
-//
-//
-// // DELETE
-// userRoute.delete("/user",logRoute , userController.deleteUser)
+//READ
+userRoute.get("/user/:id", userController.getUser)
+
+//UPDATE
+userRoute.patch("/user/", userController.updateUser)
+
+//DELETE
+//userRoute.delete("/user/:id", userController.deleteUser)
 
 module.exports = userRoute
