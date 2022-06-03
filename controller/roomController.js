@@ -24,8 +24,8 @@ exports.getRoom = async (req, res) => {
   }
   const rooms = await Room.find(filter)
     .populate({ path: 'bets', populate: { path: 'pronostics' } })
-    .populate('invited')
-    .populate('participants')
+    .populate('invited', { _id: 1, nickname: 1, image: 1 })
+    .populate('participants', { _id: 1, nickname: 1, image: 1 })
     .catch((e) => {
       res.status(400).json({ error: e.message })
     })

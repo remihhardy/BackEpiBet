@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const { OAuth2Client } = require('google-auth-library')
 const cloudinary = require('cloudinary')
+const Epicoin = require('../model/Epicoin')
 const client = new OAuth2Client(process.env.REACT_APP_GOOGLE_CLIENT_ID)
 
 exports.register = async (req, res) => {
@@ -59,12 +60,14 @@ exports.google = async (req, res) => {
     audience: process.env.CLIENT_ID
   })
     .catch(error => res.status(400).json({ error: error.message }))
+  // eslint-disable-next-line camelcase
   const { email, given_name, picture } = await ticket.getPayload()
   let user = await User.findOne({ email })
   let code = 200
   if (!user) {
     user = new User({
       email,
+      // eslint-disable-next-line camelcase
       nickname: given_name
     })
     let image
@@ -85,62 +88,58 @@ exports.google = async (req, res) => {
 }
 
 exports.getUser = async (req, res) => {
-    let filter = {}
-    if (req.params.id) {
-        filter = { _id: req.params.id }
-    }
-    let user = await User.find(filter, { password: 0 })
-        .catch((e) => {
-            res.status(403).json({ "error": e.message })
-        })
+  let filter = {}
+  if (req.params.id) {
+    filter = { _id: req.params.id }
+  }
+  const user = await User.find(filter, { password: 0 })
+    .catch((e) => {
+      res.status(400).json({ error: e.message })
+    })
+  if (req.params.id) {
+    filter = { user: req.params.id }
+  } else { filter = {} }
+  const epicoins = await Epicoin.find(filter)
+    .catch((e) => {
+      res.status(400).json({ error: e.message })
+    })
+  res.status(200).json(user)
+}
 
-    res.status(200).json(user)
-};
 
-
-
-// TODO : UPDATE
 exports.updateUser = async (req, res) => {
+  const filter = { _id: req.body.user_id }
+  const user = await User.find(filter)
+  const newData = {}
 
-    let filter = { _id: req.body._id }
-    let user = await User.find(filter)
-    console.log("USER", user)
+  if (typeof req.body.nickname === 'undefined' || req.body.nickname == '') {
+    newData.nickname = user[0].nickname
+  } else { newData.nickname = req.body.nickname }
 
-    let newData = {};
+  if (typeof req.body.email === 'undefined' || req.body.email == '') {
+    newData.email = user[0].email
+  } else { newData.email = req.body.email }
 
-    if (typeof req.body.nickname === 'undefined' || req.body.nickname == "") {
-        newData.nickname = user[0].nickname;
-    } else { newData.nickname = req.body.nickname; }
+  if (typeof req.body.image === 'undefined' || req.body.image == '') {
+    newData.image = user[0].image
+  } else { newData.image = req.body.image }
 
-    if (typeof req.body.email === 'undefined' || req.body.email == "") {
-        newData.email = user[0].email;
-    } else { newData.email = req.body.email; }
+  if (typeof req.body.password !== 'undefined') {
+    newData.password = await bcrypt.hash(req.body.password, 10).catch((err) => { console.error(err) })
+  }
 
-    if (typeof req.body.image === 'undefined' || req.body.image == "") {
-        newData.image = user[0].image;
-    } else { newData.image = req.body.image; }
-
-    if (typeof req.body.password !== 'undefined') {
-        newData.password = await bcrypt.hash(req.body.password, 10).catch((err) => { console.error(err); });
-    }
-
-    console.log("NEW DATA", newData);
-
-    User.findOneAndUpdate(filter, newData)
-        .then(() => res.status(201).json({ "message": "user " + req.body.nickname + " updated" }))
-        .catch((error) => res.status(500).json({ "error": error.message }))
-};
+  User.findOneAndUpdate(filter, newData)
+    .then(() => res.status(201).json({ message: 'user ' + req.body.nickname + ' updated' }))
+    .catch((error) => res.status(500).json({ error: error.message }))
+}
 
 exports.deleteUser = async (req, res) => {
-
-    let filter = { _id: req.body.user_id }
-    User.deleteOne(filter)
-        .then(
-            () => res.status(200).json({ result: "user deleted" })
-        )
-        .catch(
-            (error) => res.status(400).json({ error: error.message })
-        )
-
-};
-
+  const filter = { _id: req.body.user_id }
+  User.deleteOne(filter)
+    .then(
+      () => res.status(200).json({ result: 'user deleted' })
+    )
+    .catch(
+      (error) => res.status(400).json({ error: error.message })
+    )
+}
