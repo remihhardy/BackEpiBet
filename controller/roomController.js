@@ -50,17 +50,20 @@ exports.updateRoom = async (req, res) => {
   console.log("ROOM", room)
 
   let newData = {
-    "name": room[0].name,
-    "description": room[0].description,
-    "category": room[0].category,
-    "private": room[0].private,
-    "admin": room[0].admin,
+    "name": req.body.name,
+    "description": req.body.description,
+    "category": req.body.category,
+    "private": req.body.private,
+    "admin": req.body.admin,
   };
 
   console.log("NEW DATA", newData);
 
   Room.findOneAndUpdate(filter, newData)
-    .then(() => res.status(201).json({ "message": "room " + req.body.name + " updated" }))
+    .then((response) => res.status(201).json({
+      "message": "room " + req.body.name + " updated",
+      "room_id": response._id
+    }))
     .catch((error) => res.status(500).json({ "error": error.message }))
 };
 
