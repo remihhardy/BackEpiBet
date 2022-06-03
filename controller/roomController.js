@@ -19,10 +19,6 @@ exports.addRoom = async (req, res) => {
   }
 }
 exports.getRoom = async (req, res) => {
-  let filter = {}
-  if (req.params.id) {
-    filter = { _id: req.params.id }
-  }
   const bets = await Bet.find({ room: req.params.id })
   const betsToUpdate = []
   await bets.map(bet => {
@@ -32,6 +28,11 @@ exports.getRoom = async (req, res) => {
     }
   })
   await Bet.updateMany({ _id: { $in: betsToUpdate }, status: 'open' }, { status: 'outdated' })
+
+  let filter = {}
+  if (req.params.id) {
+    filter = { _id: req.params.id }
+  }
   const rooms = await Room.find(filter)
     .populate({ path: 'bets', populate: { path: 'pronostics' } })
     .populate('invited', { _id: 1, nickname: 1, image: 1 })
@@ -39,17 +40,19 @@ exports.getRoom = async (req, res) => {
     .catch((e) => {
       res.status(400).json({ error: e.message })
     })
-  if (req.params.id) {
-    filter = { room: req.params.id }
-  } else {
-    filter = {}
+  if (rooms) {
+    if (req.params.id) {
+      filter = { room: req.params.id }
+    } else {
+      filter = {}
+    }
+    const epicoins = await Epicoin.find(filter)
+      .populate('user', { _id: 1, nickname: 1 })
+      .catch((e) => {
+        res.status(400).json({ error: e.message })
+      })
+    res.status(200).json({ rooms, epicoins })
   }
-  const epicoins = await Epicoin.find(filter)
-    .populate('user', { _id: 1, nickname: 1 })
-    .catch((e) => {
-      res.status(400).json({ error: e.message })
-    })
-  res.status(200).json({ rooms, epicoins })
 }
 // TODO : update room
 // exports.updateRoom =  async(req , res)=> {

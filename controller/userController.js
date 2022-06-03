@@ -4,9 +4,28 @@ const bcrypt = require('bcrypt')
 const { OAuth2Client } = require('google-auth-library')
 const cloudinary = require('cloudinary')
 const Epicoin = require('../model/Epicoin')
+const Room = require('../model/Room')
+const Invited = require('../model/Invited')
 const client = new OAuth2Client(process.env.REACT_APP_GOOGLE_CLIENT_ID)
 
 exports.register = async (req, res) => {
+  if (req.body.invited_id) {
+    const user = await User.findOne({ _id: req.body.invited_id, invited: true })
+    if (!user) {
+      res.status(400).send({ error: 'no users with such id are invited' })
+    } else {
+      const hashedPassword = await bcrypt.hash(req.body.password, 10)
+
+      user.update(
+        {
+          email: req.body.email,
+          nickname: req.body.nickname,
+          password: hashedPassword
+        }
+      )
+    }
+  }
+
   if (!(req.body.email && req.body.nickname && req.body.password && req.body.passwordConfirmation)) {
     res.status(422).send({ error: 'All inputs are required' })
   } else if (req.body.password !== req.body.passwordConfirmation) {
@@ -24,6 +43,7 @@ exports.register = async (req, res) => {
       .catch(error => res.status(400).json({ error: error.message }))
   }
 }
+
 exports.login = async (req, res) => {
   console.log('login ..')
   if (!(req.body.identity && req.body.password)) {
@@ -96,31 +116,32 @@ exports.getUser = async (req, res) => {
     .catch((e) => {
       res.status(400).json({ error: e.message })
     })
-  if (req.params.id) {
-    filter = { user: req.params.id }
-  } else { filter = {} }
-  const epicoins = await Epicoin.find(filter)
-    .catch((e) => {
-      res.status(400).json({ error: e.message })
-    })
-  res.status(200).json(user)
+  if (user) {
+    if (req.params.id) {
+      filter = { user: req.params.id }
+    } else { filter = {} }
+    const epicoins = await Epicoin.find(filter)
+      .catch((e) => {
+        res.status(400).json({ error: e.message })
+      })
+    res.status(200).json(user, epicoins)
+  }
 }
-
 
 exports.updateUser = async (req, res) => {
   const filter = { _id: req.body.user_id }
   const user = await User.find(filter)
   const newData = {}
 
-  if (typeof req.body.nickname === 'undefined' || req.body.nickname == '') {
+  if (typeof req.body.nickname === 'undefined' || req.body.nickname === '') {
     newData.nickname = user[0].nickname
   } else { newData.nickname = req.body.nickname }
 
-  if (typeof req.body.email === 'undefined' || req.body.email == '') {
+  if (typeof req.body.email === 'undefined' || req.body.email === '') {
     newData.email = user[0].email
   } else { newData.email = req.body.email }
 
-  if (typeof req.body.image === 'undefined' || req.body.image == '') {
+  if (typeof req.body.image === 'undefined' || req.body.image === '') {
     newData.image = user[0].image
   } else { newData.image = req.body.image }
 
@@ -142,4 +163,40 @@ exports.deleteUser = async (req, res) => {
     .catch(
       (error) => res.status(400).json({ error: error.message })
     )
+}
+
+exports.invite = async (req, res) => {
+  const invitedId = []
+  const invited = new Invited({
+    count: 0
+  })
+  invited.save()
+    .catch(error => res.status(400).json({ error: error.message }))
+
+  let invitedCount = invited.count
+  while (req.body.number > 0) {
+    const hashedPassword = await bcrypt.hash(Math.random().toString(36).slice(2), 10)
+    const user = new User({
+      email: 'NewPlayer' + invited.id + invitedCount,
+      nickname: 'NewPlayer' + invited.id + invitedCount,
+      password: hashedPassword,
+      invited: true
+    })
+    await user.save()
+    // eslint-disable-next-line camelcase
+      .then(() => {
+        return invitedId.push(user._id)
+      })
+      .catch(error => res.status(400).json({ error: error.message }))
+    await Room.updateOne({ _id: req.body.room_id }, { $push: { invited: user._id } })
+      .catch((err) => {
+        return res.status(400).json({ error: err.message })
+      })
+    req.body.number--
+    console.log(req.body.number)
+    invitedCount++
+  }
+  await invited.updateOne({ count: invitedCount })
+    .then(() => res.status(201).json(invitedId))
+    .catch((err) => res.status(400).json(err.message))
 }

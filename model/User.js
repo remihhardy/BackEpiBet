@@ -30,8 +30,11 @@ const userSchema = mongoose.Schema({
   },
   token: {
     type: String
+  },
+  invited: {
+    type: Boolean,
+    default: false
   }
-
 })
 
 userSchema.plugin(uniqueValidator)
