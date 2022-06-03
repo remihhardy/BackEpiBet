@@ -8,6 +8,7 @@ exports.addRoom = async (req, res) => {
   } else {
     const room = new Room({
       name: req.body.name,
+      description: req.body.description,
       private: req.body.private,
       category: req.body.category,
       admin: req.body.user_id,
@@ -54,28 +55,33 @@ exports.getRoom = async (req, res) => {
     res.status(200).json({ rooms, epicoins })
   }
 }
-// TODO : update room
-// exports.updateRoom =  async(req , res)=> {
-//     if (!(req.body.title && req.params.id&& req.body.releaseDate&& req.body.genre&& req.body.image && req.body.plot && req.body.director )) {
-//         res.status(422).send({"error":"All inputs are required"});
-//     }
-//
-//     else {
-//         let filter = {_id: req.params.id}
-//
-//         Room.findOneAndUpdate(filter,
-//             {
-//                 "title": req.body.title,
-//                 "releaseDate": req.body.genre,
-//                 "image": req.body.image,
-//                 "plot": req.body.plot,
-//                 "director": req.body.director,
-//             }
-//         )
-//             .then(() => res.status(201).json({"message": "room " + req.body.title + " updated"}))
-//             .catch((error) => res.status(500).json({"error": error.message}))
-//     }
-// };
+
+// UPDATE ROOM
+exports.updateRoom = async (req, res) => {
+  let filter = { _id: req.body._id }
+  let room = await Room.find(filter)
+  console.log("ROOM", room)
+
+  let newData = {
+    "name": req.body.name,
+    "description": req.body.description,
+    "category": req.body.category,
+    "private": req.body.private,
+    "admin": req.body.admin,
+  };
+
+  console.log("NEW DATA", newData);
+
+  Room.findOneAndUpdate(filter, newData)
+    .then((response) => res.status(201).json({
+      "message": "room " + req.body.name + " updated",
+      "room_id": response._id
+    }))
+    .catch((error) => res.status(500).json({ "error": error.message }))
+};
+
+
+
 // exports.deleteRoom =  async(req , res)=> {
 //     if (!(req.params.id)) {
 //         res.status(422).send({"error":"All inputs are required"});

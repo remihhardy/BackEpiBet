@@ -10,9 +10,9 @@ roomRoute.post('/room', authRoute, roomController.addRoom)
 roomRoute.get('/room/:id', roomController.getRoom)
 
 roomRoute.get('/room', roomController.getRoom)
-/// / TODO :
-// roomRoute.put("/room/:id", roomController.updateRoom)
-//
+
+roomRoute.patch("/room/", authRoute, roomController.updateRoom)
+
 // // DELETE
 // roomRoute.delete("/room", roomController.deleteRoom)
 
