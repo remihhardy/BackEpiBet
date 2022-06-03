@@ -22,7 +22,7 @@ exports.addPronostic = async (req, res) => {
       if (!alreadyBet) {
         const bet = await Bet.findOne({ _id: req.body.bet_id })
         const diff = bet.deadline - Date.now()
-        if (diff < 0) {
+        if (diff < 0 || bet.status === 'closed') {
           if (bet.status === 'open') {
             await Bet.updateOne({ _id: { $in: req.body.bet_id }, status: 'open' }, { status: 'outdated' })
           }
