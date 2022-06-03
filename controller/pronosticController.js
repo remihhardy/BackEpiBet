@@ -21,7 +21,13 @@ exports.addPronostic = async (req, res) => {
       const alreadyBet = await Pronostic.findOne({ user: req.body.user_id, bet: req.body.bet_id })
       if (!alreadyBet) {
         const bet = await Bet.findOne({ _id: req.body.bet_id })
-
+        const diff = bet.deadline - Date.now()
+        if (diff < 0) {
+          if (bet.status === 'open') {
+            await Bet.updateOne({ _id: { $in: req.body.bet_id }, status: 'open' }, { status: 'outdated' })
+          }
+          return res.status(422).json({ error: 'Bet outdated !' })
+        }
         if (bet.options.length !== req.body.pronostic.length) {
           return res.status(422).json({ error: 'wrong guess, bad number of options' })
         }

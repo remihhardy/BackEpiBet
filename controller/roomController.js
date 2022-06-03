@@ -1,5 +1,6 @@
 const Room = require('../model/Room')
 const Epicoin = require('../model/Epicoin')
+const Bet = require('../model/Bet')
 
 exports.addRoom = async (req, res) => {
   if (!(req.body.name && req.body.category)) {
@@ -22,6 +23,15 @@ exports.getRoom = async (req, res) => {
   if (req.params.id) {
     filter = { _id: req.params.id }
   }
+  const bets = await Bet.find({ room: req.params.id })
+  const betsToUpdate = []
+  await bets.map(bet => {
+    const diff = bet.deadline - Date.now()
+    if (diff < 0) {
+      betsToUpdate.push(bet._id)
+    }
+  })
+  await Bet.updateMany({ _id: { $in: betsToUpdate }, status: 'open' }, { status: 'outdated' })
   const rooms = await Room.find(filter)
     .populate({ path: 'bets', populate: { path: 'pronostics' } })
     .populate('invited', { _id: 1, nickname: 1, image: 1 })

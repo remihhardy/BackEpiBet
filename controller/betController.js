@@ -6,12 +6,15 @@ const Epicoin = require('../model/Epicoin')
 exports.addBet = async (req, res) => {
   if (!(req.body.title && req.body.options && req.body.deadline && req.body.room_id)) {
     res.status(422).send({ error: 'All inputs are required' })
+  } else if (req.body.deadline < Date.now()) {
+    res.status(422).send({ error: 'bad deadline value !' })
   } else {
     const bet = new Bet({
       title: req.body.title,
       options: req.body.options,
-      deadline: req.body.category,
+      category: req.body.category,
       score_bet: req.body.score_bet,
+      deadline: req.body.deadline,
       status: 'open'
     })
     bet.save()
