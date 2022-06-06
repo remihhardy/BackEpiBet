@@ -93,7 +93,10 @@ exports.google = async (req, res) => {
     let image
     await cloudinary.v2.uploader.upload(picture,
       { public_id: user._id },
-      function (result) { image = result.url })
+      function (result, error) {
+        console.log(result, error
+        )
+      })
     user.image = image
     user.save()
       .catch(error => res.status(400).json({ error: error.message }))
@@ -133,7 +136,6 @@ exports.updateUser = async (req, res) => {
   const filter = { _id: req.body.user_id }
   const user = await User.find(filter)
   const newData = {}
-
   if (typeof req.body.nickname === 'undefined' || req.body.nickname === '') {
     newData.nickname = user[0].nickname
   } else { newData.nickname = req.body.nickname }
@@ -144,7 +146,15 @@ exports.updateUser = async (req, res) => {
 
   if (typeof req.body.image === 'undefined' || req.body.image === '') {
     newData.image = user[0].image
-  } else { newData.image = req.body.image }
+  } else {
+    const imageUpload = await cloudinary.v2.uploader.upload(req.body.image,
+      { public_id: user._id },
+      function (result, error) { console.log(result, error) }
+    )
+    newData.image = imageUpload.url
+
+    console.log(newData.image)
+  }
 
   if (typeof req.body.password !== 'undefined') {
     newData.password = await bcrypt.hash(req.body.password, 10).catch((err) => { console.error(err) })
