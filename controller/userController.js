@@ -124,7 +124,8 @@ exports.getUser = async (req, res) => {
       .catch((e) => {
         res.status(400).json({ error: e.message })
       })
-    res.status(200).json(user, epicoins)
+    user.epicoins = epicoins
+    res.status(200).json(user)
   }
 }
 
@@ -156,9 +157,11 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   const filter = { _id: req.body.user_id }
-  User.deleteOne(filter)
+  User.updateOne(filter, { pseudo: req.body.user_id, email: req.body.user_id })
+    .then(() => Room.updateMany({ admin: req.body.user_id }, { open: false })
+    )
     .then(
-      () => res.status(200).json({ result: 'user deleted' })
+      () => res.status(200).json({ result: 'personal data are deleted, we keep epicoins data for stats display' })
     )
     .catch(
       (error) => res.status(400).json({ error: error.message })
