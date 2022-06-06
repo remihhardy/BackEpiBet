@@ -90,14 +90,14 @@ exports.google = async (req, res) => {
       // eslint-disable-next-line camelcase
       nickname: given_name
     })
-    let image
-    await cloudinary.v2.uploader.upload(picture,
+
+    const image = await cloudinary.v2.uploader.upload(picture,
       { public_id: user._id },
       function (result, error) {
         console.log(result, error
         )
       })
-    user.image = image
+    user.image = image.url
     user.save()
       .catch(error => res.status(400).json({ error: error.message }))
     code = 201
