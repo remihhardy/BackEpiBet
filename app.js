@@ -2,11 +2,17 @@ const express = require('express')
 const cors = require('cors')
 const app = express()
 app.use(cors())
-app.use(express.json())
 require('dotenv').config()
 const mongoose = require('mongoose')
-app.use(express.json())
-
+const bodyParser = require('body-parser')
+app.use(bodyParser.json({
+  limit: '50mb'
+}))
+app.use(bodyParser.urlencoded({
+  limit: '50mb',
+  parameterLimit: 100000,
+  extended: true
+}))
 const userRoute = require('./routes/user')
 const roomRoute = require('./routes/room')
 const betRoute = require('./routes/bet')
