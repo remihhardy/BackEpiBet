@@ -11,7 +11,11 @@ roomRoute.get('/room/:id', roomController.getRoom)
 
 roomRoute.get('/room', roomController.getRoom)
 
-roomRoute.patch("/room/", authRoute, roomController.updateRoom)
+roomRoute.patch('/room/', authRoute, roomController.updateRoom)
+
+roomRoute.patch('/room/accept/:room_id', authRoute, roomController.acceptInvite)
+
+roomRoute.patch('/room/decline/:room_id', authRoute, roomController.declineInvite)
 
 // // DELETE
 // roomRoute.delete("/room", roomController.deleteRoom)

@@ -58,29 +58,46 @@ exports.getRoom = async (req, res) => {
 
 // UPDATE ROOM
 exports.updateRoom = async (req, res) => {
-  let filter = { _id: req.body._id }
-  let room = await Room.find(filter)
-  console.log("ROOM", room)
+  const filter = { _id: req.body._id }
 
-  let newData = {
-    "name": req.body.name,
-    "description": req.body.description,
-    "category": req.body.category,
-    "private": req.body.private,
-    "admin": req.body.admin,
-  };
+  const newData = {
+    name: req.body.name,
+    description: req.body.description,
+    category: req.body.category,
+    private: req.body.private,
+    admin: req.body.admin
+  }
 
-  console.log("NEW DATA", newData);
+  console.log('NEW DATA', newData)
 
   Room.findOneAndUpdate(filter, newData)
     .then((response) => res.status(201).json({
-      "message": "room " + req.body.name + " updated",
-      "room_id": response._id
+      message: 'room ' + req.body.name + ' updated',
+      room_id: response._id
     }))
-    .catch((error) => res.status(500).json({ "error": error.message }))
-};
+    .catch((error) => res.status(500).json({ error: error.message }))
+}
 
-
+exports.acceptInvite = async (req, res) => {
+  if (!(req.params.room_id && req.body.user_id)) {
+    res.status(422).send({ error: 'All inputs are required' })
+  } else {
+    const filter = { _id: req.params.room_id, invited: req.body.user_id }
+    Room.findOneAndUpdate(filter, { $push: { member: req.body.user._id }, $pull: { invited: req.body.user_id } })
+      .then(() => res.status(203).json({ success: 'challenge accepted!' }))
+      .catch((error) => res.status(400).json({ error: error.message }))
+  }
+}
+exports.declineInvite = async (req, res) => {
+  if (!(req.params.room_id && req.body.user_id)) {
+    res.status(422).send({ error: 'All inputs are required' })
+  } else {
+    const filter = { _id: req.params.room_id, invited: req.body.user_id }
+    Room.findOneAndUpdate(filter, { $pull: { invited: req.body.user_id } })
+      .then(() => res.status(203).json({ success: 'challenge declined!' }))
+      .catch((error) => res.status(400).json({ error: error.message }))
+  }
+}
 
 // exports.deleteRoom =  async(req , res)=> {
 //     if (!(req.params.id)) {
