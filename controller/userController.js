@@ -186,7 +186,7 @@ exports.invite = async (req, res) => {
       invited: true
     })
     await user.save()
-    // eslint-disable-next-line camelcase
+      // eslint-disable-next-line camelcase
       .then(() => {
         return invitedId.push(user._id)
       })

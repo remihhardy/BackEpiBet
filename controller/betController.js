@@ -101,7 +101,7 @@ exports.addResult = async (req, res) => {
           won = true
         } else if (
           (pronostic.pronostic[0] > pronostic.pronostic[1] && req.body.result[0] > req.body.result[1]) ||
-                    (pronostic.pronostic[0] < pronostic.pronostic[1] && req.body.result[0] < req.body.result[1])
+          (pronostic.pronostic[0] < pronostic.pronostic[1] && req.body.result[0] < req.body.result[1])
         ) {
           points = 1
           won = true
@@ -143,17 +143,17 @@ exports.addResult = async (req, res) => {
 //             .catch((error) => res.status(500).json({"error": error.message}))
 //     }
 // };
-// exports.deleteBet =  async(req , res)=> {
-//     if (!(req.params.id)) {
-//         res.status(422).send({"error":"All inputs are required"});
-//     }
-//     let filter = {_id : req.params.id }
-//     Bet.deleteOne(filter)
-//         .then(
-//             () => res.status(200).json({result: "bet deleted"})
-//         )
-//         .catch(
-//             (error) => res.status(400).json({error: error.message})
-//         )
-//
-// };
+exports.deleteBet = async (req, res) => {
+  if (!(req.params.id)) {
+    res.status(422).send({ "error": "All inputs are required" });
+  }
+  let filter = { _id: req.params.id }
+  Bet.deleteOne(filter)
+    .then(
+      () => res.status(200).json({ result: "bet deleted" })
+    )
+    .catch(
+      (error) => res.status(400).json({ error: error.message })
+    )
+
+};
