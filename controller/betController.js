@@ -12,7 +12,6 @@ exports.addBet = async (req, res) => {
     const bet = new Bet({
       title: req.body.title,
       options: req.body.options,
-      category: req.body.category,
       score_bet: req.body.score_bet,
       deadline: req.body.deadline,
       status: 'open'
@@ -41,7 +40,7 @@ exports.addResult = async (req, res) => {
   const enterResult = async (won, points, pronostic) => {
     Pronostic.findOneAndUpdate({ _id: pronostic._id },
       {
-        won,
+        won: won,
         points_earned: points
       })
       .catch((err) => console.log(err))
@@ -62,11 +61,10 @@ exports.addResult = async (req, res) => {
     res.status(422).send({ error: 'All inputs are required' })
   } else {
     const bet = await Bet.findOne({ _id: req.body.bet_id })
-    console.log(bet)
     if (bet.status === 'closed') {
       return res.status(409).json({ error: 'score already set' })
     } else {
-      await Bet.updateOne({ _id: req.body.bet_id }, { status: 'closed' })
+      await Bet.updateOne({ _id: req.body.bet_id }, { status: 'closed', result: req.body.result })
     }
     if (bet.options.length !== req.body.result.length) {
       return res.status(422).json({ error: 'wrong guess, bad number of options' })
@@ -76,11 +74,11 @@ exports.addResult = async (req, res) => {
       if (sum !== 1) {
         return res.status(422).json({ error: 'wrong guess, not 1 or 0 value' })
       }
-
+      let points
+      let won
       const allPronostics = await Pronostic.find({ bet: req.body.bet_id })
+
       allPronostics.map(pronostic => {
-        let points
-        let won
         if (JSON.stringify(pronostic.pronostic) === JSON.stringify(req.body.result)) {
           points = 1
           won = true
@@ -88,7 +86,7 @@ exports.addResult = async (req, res) => {
           points = 0
           won = false
         }
-        enterResult(won, points, pronostic)
+        return enterResult(won, points, pronostic)
       })
     } else {
       const allPronostics = await Pronostic.find({ bet: req.body.bet_id })
@@ -114,7 +112,7 @@ exports.addResult = async (req, res) => {
           points = 0
           won = false
         }
-        enterResult(won, points, pronostic)
+        return enterResult(won, points, pronostic)
       })
     }
   }
