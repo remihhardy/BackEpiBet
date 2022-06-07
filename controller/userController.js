@@ -6,6 +6,7 @@ const cloudinary = require('cloudinary')
 const Epicoin = require('../model/Epicoin')
 const Room = require('../model/Room')
 const Invited = require('../model/Invited')
+const Pronostic = require('../model/Pronostic')
 const client = new OAuth2Client(process.env.REACT_APP_GOOGLE_CLIENT_ID)
 
 exports.register = async (req, res) => {
@@ -123,12 +124,16 @@ exports.getUser = async (req, res) => {
     if (req.params.id) {
       filter = { user: req.params.id }
     } else { filter = {} }
-    const epicoins = await Epicoin.find(filter)
+    await Epicoin.find(filter)
+      .then((response) => {
+        user.epicoins = response
+      })
+      .then(() => Pronostic.find(filter)
+          .then((response) => user.pronostics = response))
       .catch((e) => {
         res.status(400).json({ error: e.message })
       })
-    user.epicoins = epicoins
-    res.status(200).json(user)
+    res.status(200).json({ user, epicoins: user.epicoins, pronostics: user.pronostics })
   }
 }
 
