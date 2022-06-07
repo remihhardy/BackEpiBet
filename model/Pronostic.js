@@ -22,12 +22,7 @@ const pronosticSchema = mongoose.Schema({
   },
   points_earned: {
     type: Number
-  },
-  invited: {
-    type: Boolean,
-    default: false
   }
-
 })
 
 pronosticSchema.plugin(uniqueValidator)

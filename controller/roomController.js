@@ -48,7 +48,7 @@ exports.getRoom = async (req, res) => {
       filter = {}
     }
     const epicoins = await Epicoin.find(filter)
-      .populate('user', { _id: 1, nickname: 1 })
+      .populate('user', { _id: 1, nickname: 1, epicount: 1 })
       .catch((e) => {
         res.status(400).json({ error: e.message })
       })
@@ -58,7 +58,7 @@ exports.getRoom = async (req, res) => {
 
 // UPDATE ROOM
 exports.updateRoom = async (req, res) => {
-  const filter = { _id: req.body._id }
+  const filter = { _id: req.body.room_id }
 
   const newData = {
     name: req.body.name,
@@ -67,8 +67,6 @@ exports.updateRoom = async (req, res) => {
     private: req.body.private,
     admin: req.body.admin
   }
-
-  console.log('NEW DATA', newData)
 
   Room.findOneAndUpdate(filter, newData)
     .then((response) => res.status(201).json({

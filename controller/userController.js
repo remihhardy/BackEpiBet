@@ -6,6 +6,7 @@ const cloudinary = require('cloudinary')
 const Epicoin = require('../model/Epicoin')
 const Room = require('../model/Room')
 const Invited = require('../model/Invited')
+const Pronostic = require('../model/Pronostic')
 const client = new OAuth2Client(process.env.REACT_APP_GOOGLE_CLIENT_ID)
 
 exports.register = async (req, res) => {
@@ -90,11 +91,14 @@ exports.google = async (req, res) => {
       // eslint-disable-next-line camelcase
       nickname: given_name
     })
-    let image
-    await cloudinary.v2.uploader.upload(picture,
+
+    const image = await cloudinary.v2.uploader.upload(picture,
       { public_id: user._id },
-      function (result) { image = result.url })
-    user.image = image
+      function (result, error) {
+        console.log(result, error
+        )
+      })
+    user.image = image.url
     user.save()
       .catch(error => res.status(400).json({ error: error.message }))
     code = 201
@@ -120,12 +124,16 @@ exports.getUser = async (req, res) => {
     if (req.params.id) {
       filter = { user: req.params.id }
     } else { filter = {} }
-    const epicoins = await Epicoin.find(filter)
+    await Epicoin.find(filter)
+      .then((response) => {
+        user.epicoins = response
+      })
+      .then(() => Pronostic.find(filter)
+          .then((response) => user.pronostics = response))
       .catch((e) => {
         res.status(400).json({ error: e.message })
       })
-    user.epicoins = epicoins
-    res.status(200).json(user)
+    res.status(200).json({ user, epicoins: user.epicoins, pronostics: user.pronostics })
   }
 }
 
@@ -133,7 +141,6 @@ exports.updateUser = async (req, res) => {
   const filter = { _id: req.body.user_id }
   const user = await User.find(filter)
   const newData = {}
-
   if (typeof req.body.nickname === 'undefined' || req.body.nickname === '') {
     newData.nickname = user[0].nickname
   } else { newData.nickname = req.body.nickname }
@@ -144,7 +151,15 @@ exports.updateUser = async (req, res) => {
 
   if (typeof req.body.image === 'undefined' || req.body.image === '') {
     newData.image = user[0].image
-  } else { newData.image = req.body.image }
+  } else {
+    const imageUpload = await cloudinary.v2.uploader.upload(req.body.image,
+      { public_id: user._id },
+      function (result, error) { console.log(result, error) }
+    )
+    newData.image = imageUpload.url
+
+    console.log(newData.image)
+  }
 
   if (typeof req.body.password !== 'undefined') {
     newData.password = await bcrypt.hash(req.body.password, 10).catch((err) => { console.error(err) })
