@@ -141,7 +141,9 @@ exports.updateUser = async (req, res) => {
   const filter = { _id: req.body.user_id }
   const user = await User.find(filter)
   const newData = {}
+
   const match = await bcrypt.compare(req.body.password, user.password)
+    .catch((error) => console.log(error))
   if (match) {
     if (typeof req.body.nickname === 'undefined' || req.body.nickname === '') {
       newData.nickname = user[0].nickname
