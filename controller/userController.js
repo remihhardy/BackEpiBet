@@ -129,7 +129,7 @@ exports.getUser = async (req, res) => {
         user.epicoins = response
       })
       .then(() => Pronostic.find(filter)
-          .then((response) => user.pronostics = response))
+        .then((response) => user.pronostics = response))
       .catch((e) => {
         res.status(400).json({ error: e.message })
       })
@@ -141,33 +141,38 @@ exports.updateUser = async (req, res) => {
   const filter = { _id: req.body.user_id }
   const user = await User.find(filter)
   const newData = {}
-  if (typeof req.body.nickname === 'undefined' || req.body.nickname === '') {
-    newData.nickname = user[0].nickname
-  } else { newData.nickname = req.body.nickname }
+  const match = await bcrypt.compare(req.body.password, user.password)
+  if (match) {
+    if (typeof req.body.nickname === 'undefined' || req.body.nickname === '') {
+      newData.nickname = user[0].nickname
+    } else { newData.nickname = req.body.nickname }
 
-  if (typeof req.body.email === 'undefined' || req.body.email === '') {
-    newData.email = user[0].email
-  } else { newData.email = req.body.email }
+    if (typeof req.body.email === 'undefined' || req.body.email === '') {
+      newData.email = user[0].email
+    } else { newData.email = req.body.email }
 
-  if (typeof req.body.image === 'undefined' || req.body.image === '') {
-    newData.image = user[0].image
+    if (typeof req.body.image === 'undefined' || req.body.image === '') {
+      newData.image = user[0].image
+    } else {
+      const imageUpload = await cloudinary.v2.uploader.upload(req.body.image,
+        { public_id: user._id },
+        function (result, error) { console.log(result, error) }
+      )
+      newData.image = imageUpload.url
+
+      console.log(newData.image)
+    }
+
+    if (typeof req.body.password !== 'undefined') {
+      newData.password = await bcrypt.hash(req.body.password, 10).catch((err) => { console.error(err) })
+    }
+
+    User.findOneAndUpdate(filter, newData)
+      .then(() => res.status(201).json({ message: 'user ' + req.body.nickname + ' updated' }))
+      .catch((error) => res.status(500).json({ error: error.message }))
   } else {
-    const imageUpload = await cloudinary.v2.uploader.upload(req.body.image,
-      { public_id: user._id },
-      function (result, error) { console.log(result, error) }
-    )
-    newData.image = imageUpload.url
-
-    console.log(newData.image)
+    res.status(403).json({ error: 'wrong password' })
   }
-
-  if (typeof req.body.password !== 'undefined') {
-    newData.password = await bcrypt.hash(req.body.password, 10).catch((err) => { console.error(err) })
-  }
-
-  User.findOneAndUpdate(filter, newData)
-    .then(() => res.status(201).json({ message: 'user ' + req.body.nickname + ' updated' }))
-    .catch((error) => res.status(500).json({ error: error.message }))
 }
 
 exports.deleteUser = async (req, res) => {

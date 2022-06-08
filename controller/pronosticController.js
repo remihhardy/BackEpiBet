@@ -26,7 +26,7 @@ exports.addPronostic = async (req, res) => {
           if (bet.status === 'open') {
             await Bet.updateOne({ _id: { $in: req.body.bet_id }, status: 'open' }, { status: 'outdated' })
           }
-          return res.status(422).json({ error: 'Bet outdated !' })
+          return res.status(422).json({ error: 'Bet ' + bet.status + ' !' })
         }
         if (bet.options.length !== req.body.pronostic.length) {
           return res.status(422).json({ error: 'wrong guess, bad number of options' })
