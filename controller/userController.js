@@ -179,6 +179,7 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   const filter = { _id: req.body.user_id }
+  Room.updateMany({ admin: req.body.user_id }, { open: false })
   User.updateOne(filter, { pseudo: req.body.user_id, email: req.body.user_id })
     .then(() => Room.updateMany({ admin: req.body.user_id }, { open: false })
     )
