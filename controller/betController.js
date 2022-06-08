@@ -40,7 +40,7 @@ exports.addResult = async (req, res) => {
   const enterResult = async (won, points, pronostic) => {
     Pronostic.findOneAndUpdate({ _id: pronostic._id },
       {
-        won: won,
+        won,
         points_earned: points
       })
       .catch((err) => console.log(err))
@@ -119,6 +119,24 @@ exports.addResult = async (req, res) => {
   res.status(200).json({ message: 'result fullfilled !' })
 }
 
+exports.deleteBet = async (req, res) => {
+  if (!(req.params.id && req.body.room_id)) {
+    res.status(422).send({ error: 'All inputs are required' })
+  }
+  const filter = { _id: req.params.id }
+  Bet.deleteOne(filter)
+    .catch(
+      (error) => res.status(400).json({ error: error.message })
+    )
+  const pronostics = await Pronostic.find({ bet: req.params.id })
+    .catch(
+      (error) => res.status(400).json({ error: error.message })
+    )
+  pronostics.forEach(pronostic => Epicoin.findOneAndUpdate({ user: pronostic.user }, { $inc: { epicount: -pronostic.points_earned } }))
+  Pronostic.deleteMany({ bet: req.params.id })
+  Room.findOneAndUpdate({ _id: req.body.id }, { $pullAll: { bets: req.params.id } })
+}
+
 // TODO : update bet
 // exports.updateBet =  async(req , res)=> {
 //     if (!(req.body.title && req.params.id&& req.body.releaseDate&& req.body.genre&& req.body.image && req.body.plot && req.body.director )) {
@@ -140,18 +158,4 @@ exports.addResult = async (req, res) => {
 //             .then(() => res.status(201).json({"message": "bet " + req.body.title + " updated"}))
 //             .catch((error) => res.status(500).json({"error": error.message}))
 //     }
-// };
-// exports.deleteBet =  async(req , res)=> {
-//     if (!(req.params.id)) {
-//         res.status(422).send({"error":"All inputs are required"});
-//     }
-//     let filter = {_id : req.params.id }
-//     Bet.deleteOne(filter)
-//         .then(
-//             () => res.status(200).json({result: "bet deleted"})
-//         )
-//         .catch(
-//             (error) => res.status(400).json({error: error.message})
-//         )
-//
 // };
