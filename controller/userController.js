@@ -139,7 +139,7 @@ exports.getUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   const filter = { _id: req.body.user_id }
-  const user = await User.find(filter)
+  const user = await User.findOne(filter)
   const newData = {}
 
   const match = await bcrypt.compare(req.body.password, user.password)
@@ -179,8 +179,7 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   const filter = { _id: req.body.user_id }
-  Room.updateMany({ admin: req.body.user_id }, { open: false })
-  User.updateOne(filter, { pseudo: req.body.user_id, email: req.body.user_id })
+  User.updateOne(filter, { nickname: req.body.user_id, email: req.body.user_id })
     .then(() => Room.updateMany({ admin: req.body.user_id }, { open: false })
     )
     .then(
