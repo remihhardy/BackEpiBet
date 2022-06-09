@@ -6,6 +6,6 @@ const sportBetController = require('../controller/sportBetController')
 
 // GET
 
-sportBetRoute.get('/sportBet/:category', authRoute, sportBetController.getSportBet)
+sportBetRoute.get('/sportBet/:category/:type', authRoute, sportBetController.getSportBet)
 
 module.exports = sportBetRoute
