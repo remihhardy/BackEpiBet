@@ -1,5 +1,6 @@
 const Room = require('../model/Room')
 const roomAdmin = async (req, res, next) => {
+  if (req.params.room_id) { req.body.room_id = req.params.room_id }
   console.log('check if admin of the room; id user: ', req.body.user_id)
   console.log('check if admin of the room; id room: ', req.body.room_id)
   const filter = { _id: req.body.room_id, admin: req.body.user_id }
