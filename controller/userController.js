@@ -164,9 +164,13 @@ exports.updateUser = async (req, res) => {
 
       console.log(newData.image)
     }
-
-    if (typeof req.body.password !== 'undefined') {
-      newData.password = await bcrypt.hash(req.body.password, 10).catch((err) => { console.error(err) })
+    /* 
+        if (typeof req.body.password !== 'undefined') {
+          newData.password = await bcrypt.hash(req.body.password, 10).catch((err) => { console.error(err) })
+        }
+     */
+    if (typeof req.body.newpassword !== 'undefined') {
+      newData.password = await bcrypt.hash(req.body.newpassword, 10).catch((err) => { console.error(err) })
     }
 
     User.findOneAndUpdate(filter, newData)
