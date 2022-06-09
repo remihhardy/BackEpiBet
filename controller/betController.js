@@ -99,7 +99,7 @@ exports.addResult = async (req, res) => {
           won = true
         } else if (
           (pronostic.pronostic[0] > pronostic.pronostic[1] && req.body.result[0] > req.body.result[1]) ||
-                    (pronostic.pronostic[0] < pronostic.pronostic[1] && req.body.result[0] < req.body.result[1])
+          (pronostic.pronostic[0] < pronostic.pronostic[1] && req.body.result[0] < req.body.result[1])
         ) {
           points = 1
           won = true
@@ -136,26 +136,3 @@ exports.deleteBet = async (req, res) => {
   Pronostic.deleteMany({ bet: req.params.id })
   Room.findOneAndUpdate({ _id: req.body.id }, { $pullAll: { bets: req.params.id } })
 }
-
-// TODO : update bet
-// exports.updateBet =  async(req , res)=> {
-//     if (!(req.body.title && req.params.id&& req.body.releaseDate&& req.body.genre&& req.body.image && req.body.plot && req.body.director )) {
-//         res.status(422).send({"error":"All inputs are required"});
-//     }
-//
-//     else {
-//         let filter = {_id: req.params.id}
-//
-//         Bet.findOneAndUpdate(filter,
-//             {
-//                 "title": req.body.title,
-//                 "releaseDate": req.body.genre,
-//                 "image": req.body.image,
-//                 "plot": req.body.plot,
-//                 "director": req.body.director,
-//             }
-//         )
-//             .then(() => res.status(201).json({"message": "bet " + req.body.title + " updated"}))
-//             .catch((error) => res.status(500).json({"error": error.message}))
-//     }
-// };
