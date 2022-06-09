@@ -120,19 +120,19 @@ exports.addResult = async (req, res) => {
 }
 
 exports.deleteBet = async (req, res) => {
-  if (!(req.params.id && req.body.room_id)) {
+  if (!(req.params.bet_id && req.body.room_id)) {
     res.status(422).send({ error: 'All inputs are required' })
   }
-  const filter = { _id: req.params.id }
+  const filter = { _id: req.params.bet_id }
   Bet.deleteOne(filter)
     .catch(
       (error) => res.status(400).json({ error: error.message })
     )
-  const pronostics = await Pronostic.find({ bet: req.params.id })
+  const pronostics = await Pronostic.find({ bet: req.params.bet_id })
     .catch(
       (error) => res.status(400).json({ error: error.message })
     )
   pronostics.forEach(pronostic => Epicoin.findOneAndUpdate({ user: pronostic.user }, { $inc: { epicount: -pronostic.points_earned } }))
-  Pronostic.deleteMany({ bet: req.params.id })
-  Room.findOneAndUpdate({ _id: req.body.id }, { $pullAll: { bets: req.params.id } })
+  Pronostic.deleteMany({ bet: req.params.bet_id })
+  Room.findOneAndUpdate({ _id: req.params.room_id }, { $pullAll: { bets: req.params.id } })
 }
