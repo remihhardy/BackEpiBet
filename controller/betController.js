@@ -125,14 +125,12 @@ exports.deleteBet = async (req, res) => {
   }
   const filter = { _id: req.params.bet_id }
   Bet.deleteOne(filter)
+    .then(() =>
+      Pronostic.deleteMany({ bet: req.params.bet_id }))
+    .then(() => Room.findOneAndUpdate({ _id: req.params.room_id },
+      { $pullAll: { bets: req.params.id } }))
+    .then(() => res.status(200).json({ success: true }))
     .catch(
       (error) => res.status(400).json({ error: error.message })
     )
-  const pronostics = await Pronostic.find({ bet: req.params.bet_id })
-    .catch(
-      (error) => res.status(400).json({ error: error.message })
-    )
-  pronostics.forEach(pronostic => Epicoin.findOneAndUpdate({ user: pronostic.user }, { $inc: { epicount: -pronostic.points_earned } }))
-  Pronostic.deleteMany({ bet: req.params.bet_id })
-  Room.findOneAndUpdate({ _id: req.params.room_id }, { $pullAll: { bets: req.params.id } })
 }
