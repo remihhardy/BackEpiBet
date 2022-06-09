@@ -218,7 +218,6 @@ exports.invite = async (req, res) => {
         return res.status(400).json({ error: err.message })
       })
     req.body.number--
-    console.log(req.body.number)
     invitedCount++
   }
   await invited.updateOne({ count: invitedCount })
