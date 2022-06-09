@@ -16,32 +16,37 @@ exports.register = async (req, res) => {
       res.status(400).send({ error: 'no users with such id are invited' })
     } else {
       const hashedPassword = await bcrypt.hash(req.body.password, 10)
-
-      user.update(
+      let accessToken
+      User.findOneAndUpdate({ _id: req.body.invited_id },
         {
           email: req.body.email,
           nickname: req.body.nickname,
-          password: hashedPassword
+          password: hashedPassword,
+          invited: false
         }
       )
+        .then((response) => {
+          accessToken = jwt.sign({ user_id: response._id }, process.env.TOKEN_SECRET, { expiresIn: '10h' })
+        }).then(() => res.status(201).json({ user_id: user._id, token: accessToken }))
+        .catch(error => res.status(400).json({ error: error.message }))
     }
-  }
-
-  if (!(req.body.email && req.body.nickname && req.body.password && req.body.passwordConfirmation)) {
-    res.status(422).send({ error: 'All inputs are required' })
-  } else if (req.body.password !== req.body.passwordConfirmation) {
-    res.status(422).send({ error: "Password and its confirmation doesn't match" })
   } else {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10)
-    const user = new User({
-      email: req.body.email,
-      nickname: req.body.nickname,
-      password: hashedPassword
-    })
-    const accessToken = jwt.sign({ user_id: user._id }, process.env.TOKEN_SECRET, { expiresIn: '10h' })
-    user.save()
-      .then(() => res.status(201).json({ user_id: user._id, token: accessToken }))
-      .catch(error => res.status(400).json({ error: error.message }))
+    if (!(req.body.email && req.body.nickname && req.body.password && req.body.passwordConfirmation)) {
+      res.status(422).send({ error: 'All inputs are required' })
+    } else if (req.body.password !== req.body.passwordConfirmation) {
+      res.status(422).send({ error: "Password and its confirmation doesn't match" })
+    } else {
+      const hashedPassword = await bcrypt.hash(req.body.password, 10)
+      const user = new User({
+        email: req.body.email,
+        nickname: req.body.nickname,
+        password: hashedPassword
+      })
+      const accessToken = jwt.sign({ user_id: user._id }, process.env.TOKEN_SECRET, { expiresIn: '10h' })
+      user.save()
+        .then(() => res.status(201).json({ user_id: user._id, token: accessToken }))
+        .catch(error => res.status(400).json({ error: error.message }))
+    }
   }
 }
 
@@ -220,6 +225,6 @@ exports.invite = async (req, res) => {
     invitedCount++
   }
   await invited.updateOne({ count: invitedCount })
-    .then(() => res.status(201).json(invitedId))
+    .then(() => res.status(201).json({ invited: invitedId }))
     .catch((err) => res.status(400).json(err.message))
 }
