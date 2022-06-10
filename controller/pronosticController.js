@@ -8,10 +8,18 @@ exports.addPronostic = async (req, res) => {
   } else {
     const isMember = await Room.findOne({ participants: req.body.user_id, bets: req.body.bet_id })
       .catch((err) => { res.status(500).json({ error: err.message }) })
+
     const isPrivateRoom = await Room.findOne({ bets: req.body.bet_id })
       .catch((err) => { res.status(500).json({ error: err.message }) })
     if (!isMember && isPrivateRoom.private) {
-      res.status(403).json({ error: 'you\'re not a room member' })
+      const isInvited = await Room.findOne({ invited: req.body.user_id, bets: req.body.bet_id })
+        .catch((err) => { res.status(500).json({ error: err.message }) })
+      if (isInvited) {
+        await Room.findOneAndUpdate({ bets: req.body.bet_id }, { $push: { participants: req.body.user_id } })
+          .catch((err) => {
+            res.status(500).json({ error: err.message })
+          })
+      } else res.status(403).json({ error: 'you\'re not a room member' })
     } else if (!isMember) {
       await Room.findOneAndUpdate({ bets: req.body.bet_id }, { $push: { participants: req.body.user_id } })
         .catch((err) => {
