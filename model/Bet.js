@@ -15,10 +15,10 @@ const betSchema = mongoose.Schema({
   options: {
     type: [{ type: String }]
   },
-  // TODO
-  // category:{
-  //   { type : ObjectId, ref: "Category"}
-  // },
+
+  category: {
+    type: String
+  },
   pronostics: {
     type: [{ type: ObjectId, ref: 'Pronostic' }]
   },

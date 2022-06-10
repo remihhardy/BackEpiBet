@@ -97,17 +97,3 @@ exports.declineInvite = async (req, res) => {
   }
 }
 
-// exports.deleteRoom =  async(req , res)=> {
-//     if (!(req.params.id)) {
-//         res.status(422).send({"error":"All inputs are required"});
-//     }
-//     let filter = {_id : req.params.id }
-//     Room.deleteOne(filter)
-//         .then(
-//             () => res.status(200).json({result: "room deleted"})
-//         )
-//         .catch(
-//             (error) => res.status(400).json({error: error.message})
-//         )
-//
-// };

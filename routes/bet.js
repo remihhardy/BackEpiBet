@@ -14,9 +14,7 @@ betRoute.get('/bet', betController.getBet)
 
 betRoute.patch('/bet/result', authRoute, roomAdmin, betController.addResult)
 
-/// / TODO :
-// betRoute.put("/bet/:id", betController.updateBet)
-//
+
 // DELETE
 betRoute.delete('/bet/:bet_id/:room_id', authRoute, roomAdmin, betController.deleteBet)
 

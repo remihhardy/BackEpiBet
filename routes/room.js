@@ -18,7 +18,4 @@ roomRoute.patch('/room/accept/:room_id', authRoute, roomController.acceptInvite)
 
 roomRoute.patch('/room/decline/:room_id', authRoute, roomController.declineInvite)
 
-// // DELETE
-// roomRoute.delete("/room", roomController.deleteRoom)
-
 module.exports = roomRoute

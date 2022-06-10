@@ -7,10 +7,4 @@ const pronosticController = require('../controller/pronosticController')
 // CREATE
 pronosticRoute.post('/pronostic', authRoute, pronosticController.addPronostic)
 
-/// / TODO :
-// pronosticRoute.put("/pronostic/:id", pronosticController.updatePronostic)
-//
-// // DELETE
-// pronosticRoute.delete("/pronostic", pronosticController.deletePronostic)
-
 module.exports = pronosticRoute
