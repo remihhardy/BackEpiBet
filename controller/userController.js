@@ -201,7 +201,6 @@ exports.invite = async (req, res) => {
       .then(() => req.body.number--)
       .catch((error) => console.log(error))
   })
-
   const invitedId = []
   const invited = new Invited({
     count: 0
