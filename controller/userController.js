@@ -195,13 +195,19 @@ exports.deleteUser = async (req, res) => {
 }
 
 exports.invite = async (req, res) => {
+  req.body.mails.forEach((email) => {
+    User.findOne({ email })
+      .then((user) => Room.findOneAndUpdate({ _id: req.body.room_id }, { $push: { invited: user._id } }))
+      .then(() => req.body.number--)
+      .catch((error) => console.log(error))
+  })
+
   const invitedId = []
   const invited = new Invited({
     count: 0
   })
   invited.save()
     .catch(error => res.status(400).json({ error: error.message }))
-
   let invitedCount = invited.count
   while (req.body.number > 0) {
     const hashedPassword = await bcrypt.hash(Math.random().toString(36).slice(2), 10)
