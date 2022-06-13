@@ -6,13 +6,13 @@ exports.addPronostic = async (req, res) => {
   if (!(req.body.pronostic && req.body.bet_id && req.body.user_id)) {
     res.status(422).send({ error: 'All inputs are required' })
   } else {
-    const isMember = await Room.findOne({ participants: req.body.user_id, bets: req.body.bet_id })
+    let isMember = await Room.findOne({ participants: req.body.user_id, bets: req.body.bet_id })
       .catch((err) => { res.status(500).json({ error: err.message }) })
-
+    let isInvited
     const isPrivateRoom = await Room.findOne({ bets: req.body.bet_id })
       .catch((err) => { res.status(500).json({ error: err.message }) })
     if (!isMember && isPrivateRoom.private) {
-      const isInvited = await Room.findOne({ invited: req.body.user_id, bets: req.body.bet_id })
+      isInvited = await Room.findOne({ invited: req.body.user_id, bets: req.body.bet_id })
         .catch((err) => { res.status(500).json({ error: err.message }) })
       if (isInvited) {
         await Room.findOneAndUpdate({ bets: req.body.bet_id }, { $push: { participants: req.body.user_id } })
@@ -20,12 +20,15 @@ exports.addPronostic = async (req, res) => {
             res.status(500).json({ error: err.message })
           })
       } else res.status(403).json({ error: 'you\'re not a room member' })
-    } else if (!isMember) {
+    }
+    if (!isMember && !isPrivateRoom.private) {
       await Room.findOneAndUpdate({ bets: req.body.bet_id }, { $push: { participants: req.body.user_id } })
+        .then(isMember = true)
         .catch((err) => {
           res.status(500).json({ error: err.message })
         })
-    } else {
+    }
+    if (isMember || isInvited) {
       const alreadyBet = await Pronostic.findOne({ user: req.body.user_id, bet: req.body.bet_id })
       if (!alreadyBet) {
         const bet = await Bet.findOne({ _id: req.body.bet_id })

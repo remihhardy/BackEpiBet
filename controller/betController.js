@@ -43,7 +43,7 @@ exports.addResult = async (req, res) => {
         won,
         points_earned: points
       })
-      .catch((err) => console.log(err))
+      .catch((error) => console.log(error))
     Epicoin.findOneAndUpdate({ user: pronostic.user, room: req.body.room_id },
       {
         $inc: { epicount: points }
