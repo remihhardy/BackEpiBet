@@ -22,7 +22,7 @@ exports.addPronostic = async (req, res) => {
       } else res.status(403).json({ error: 'you\'re not a room member' })
     }
     if (!isMember && !isPrivateRoom.private) {
-      await Room.findOneAndUpdate({ bets: req.body.bet_id }, { $push: { participants: req.body.user_id }, $pull {invited: req.body.user_id} })
+      await Room.findOneAndUpdate({ bets: req.body.bet_id }, { $push: { participants: req.body.user_id }, $pull: {invited: req.body.user_id} })
         .then(isMember = true)
         .catch((err) => {
           res.status(500).json({ error: err.message })
